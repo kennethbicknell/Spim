@@ -1,11 +1,95 @@
 #include "spimcore.h"
 
+// Helper method that emulates a Ripple-Carry Adder
+// Ripple-Carry adders aren't exactly fast or efficient
+// I think C can handle a O(n) operation where n = 32
+// May implement Partial Carry Lookahead Adder if needed 
+unsigned ALUadder(unsigned A, unsigned B)
+{
+    unsigned result = 0;
+    char bitA, bitB, sum = 0, carry = 0;
+    int i;
+
+    for (i = 0; i < 32; i++)
+    {
+        // Get bits one by one starting with LSB
+        bitA = (A >> i) & 1;
+        bitB = (B >> i) & 1;
+
+        // Get the sum bit
+        sum = bitA ^ bitB ^ carry;
+        
+        // Add bit to the result
+        result += sum << i;
+
+        // Update carry
+        carry = bitA & bitB | carry & (bitA ^ bitB);
+    }
+
+    return result;
+}
 
 /* ALU */
 /* 10 Points */
-void ALU(unsigned A,unsigned B,char ALUControl,unsigned *ALUresult,char *Zero)
+void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zero)
 {
+    switch(ALUControl)
+    {
+        case 0: // 000 add | ALUresult = A + B
+            
+            // Just add the two numbers
+            *ALUresult = ALUadder(A, B);
 
+            break;
+        case 1: // 001 subtract | ALUresult = A - B
+            
+            // Add A and two's complement of B
+            *ALUresult = ALUadder(A, ~B + 1);
+            break;
+
+        case 2: // 010 set less than | ALUresult = (A < B)
+
+            // Subtract B from A
+            *ALUresult = ALUadder(A, ~B + 1);
+
+            // Get the sign of the result
+            *ALUresult = (*ALUresult >> 31) & 1;
+
+            // Set Zero appropriately
+            // This is done by NORing all bits of the result so that if any bit of the result is set to 1 Zero is set to 0
+            // But we already have the MSB stored as the LSB in ALUresult so we can use that instead and apply a logical NOT
+            *Zero = !(*ALUresult);
+
+            break;
+        case 3: // 011 unsigned set less than | ALUresult = (A < B)
+            
+            // We're already working with unsigned numbers
+            *ALUresult = (A < B) ? 1 : 0;
+            // Set Zero appropriately
+            *Zero = !(*ALUresult);
+
+            break;
+        case 4: // 100 AND | ALUresult = A AND B
+
+            *ALUresult = A & B;
+
+            break;
+        case 5: // 101 OR | ALUresult = A OR B
+
+            *ALUresult = A | B;
+
+            break;
+        case 6: // 110 shift B left 16 bits | ALUresult = A<<16
+
+            *ALUresult = *ALUresult << 16;
+
+            break;
+        case 7: // 111 NOT A | ALUresult = NOT A
+
+            *ALUresult = ~(*ALUresult);
+
+            break;
+    }
 }
 
 /* instruction fetch */
@@ -124,4 +208,3 @@ void PC_update(unsigned jsec,unsigned extended_value,char Branch,char Jump,char 
 {
 
 }
-
