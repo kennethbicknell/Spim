@@ -45,6 +45,7 @@ void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zer
             
             // Add A and two's complement of B
             *ALUresult = ALUadder(A, ~B + 1);
+            
             break;
 
         case 2: // 010 set less than | ALUresult = (A < B)
@@ -92,6 +93,7 @@ void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zer
         default:
             break;
     }
+    *Zero = !(*ALUresult);
 }
 
 /* instruction fetch */
@@ -112,9 +114,9 @@ int instruction_fetch(unsigned PC, unsigned *Mem, unsigned *instruction)
 void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1, unsigned *r2, unsigned *r3, unsigned *funct, unsigned *offset, unsigned *jsec)
 {
     *op = (instruction & 0xfc000000) >> 26;
-    *r1 = (instruction & 0x03c00000) >> 22;
-    *r2 = (instruction & 0x003c0000) >> 18;
-    *r3 = (instruction & 0x0003c000) >> 14;
+    *r1 = (instruction & 0x03e00000) >> 21;
+    *r2 = (instruction & 0x001f0000) >> 16;
+    *r3 = (instruction & 0x0000f800) >> 11;
     *funct = (instruction & 0x0000003f) >> 0;
     *offset = (instruction & 0x0000ffff) >> 0;
     *jsec = (instruction & 0x03ffffff) >> 0;
@@ -235,6 +237,7 @@ int instruction_decode(unsigned op, struct_controls *controls)
 void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, unsigned *data2)
 {
     *data1 = Reg[r1];
+
     *data2 = Reg[r2];
 }
 
@@ -243,9 +246,13 @@ void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, uns
 /* 10 Points */
 void sign_extend(unsigned offset, unsigned *extended_value)
 {
-    if(offset>>16){//if there is a 1 in the MSB
+    if(offset>>15){//if there is a 1 in the MSB
         *extended_value = offset | 0XFFFF0000; //or to set the leading zeros to one but to maintain last 16 bits
+    }else
+    {
+        *extended_value = offset;
     }
+    
 }
 
 /* ALU operations */
@@ -256,6 +263,8 @@ int ALU_operations(unsigned data1, unsigned data2, unsigned extended_value, unsi
     if(ALUOp >= 0 && ALUOp < 7)
     {
         ALU(data1, (ALUSrc) ? extended_value : data2, ALUOp, ALUresult, Zero);
+        
+
     }        
     else if(ALUOp == 7)
     {
@@ -323,7 +332,7 @@ void write_register(unsigned r2, unsigned r3, unsigned memdata, unsigned ALUresu
 {
     
     if(RegWrite){
-       unsigned destinationReg = (RegDst) ? r2:r3; //use correct register based on RegDst;
+       unsigned destinationReg = (RegDst) ? r3:r2; //use correct register based on RegDst;
 
        if(MemtoReg){
            Reg[destinationReg] = memdata;
@@ -345,7 +354,7 @@ void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, c
         return;
     } else if (Jump){
         *PC = *PC & 0XF0000000;
-        *PC += jsec;
+        *PC += jsec << 2;
         return;
     }
 }
