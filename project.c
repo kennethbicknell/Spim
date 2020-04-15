@@ -128,7 +128,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
     switch (op)
     {
     case 0://R-type
-        controls->ALUOp = 7;
+        controls->ALUOp = 7; //r-type
         controls->ALUSrc = 0;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -139,7 +139,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 8://add immediate
-        controls->ALUOp = 0;
+        controls->ALUOp = 0; //add
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -150,7 +150,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 35: //load word
-        controls->ALUOp = 0;
+        controls->ALUOp = 0;//have to add for address 
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -161,7 +161,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 43: //store word
-        controls->ALUOp = 0;
+        controls->ALUOp = 0;//have to add for address
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -172,7 +172,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 0;
         return 0;
     case 15: //Load Upper Immediate
-        controls->ALUOp = 6;
+        controls->ALUOp = 6;//shift left
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -183,7 +183,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 4: //branch on equal
-        controls->ALUOp = 1;
+        controls->ALUOp = 1;//subtract and check for 0
         controls->ALUSrc = 0;
         controls->Branch = 1;
         controls->Jump = 0;
@@ -194,7 +194,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 0;
         return 0;
     case 10: //Set on less than immediate
-        controls->ALUOp = 2;
+        controls->ALUOp = 2;//set less than
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -205,7 +205,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 11: //Set on less than immediate unsigned
-        controls->ALUOp = 3;
+        controls->ALUOp = 3;//set less than unsigned
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -216,7 +216,7 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 2: //jump
-        controls->ALUOp = 0;
+        controls->ALUOp = 0;//0 for dont care because alu doesn't do anything for jump
         controls->ALUSrc = 0;
         controls->Branch = 0;
         controls->Jump = 1;
@@ -261,7 +261,15 @@ int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigne
 int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
 {
     if(MemRead){
-
+        if(ALUresult > 65536 || (ALUresult % 4))
+            return 1;
+        *memdata = Mem[ALUresult >> 2];
+        return 0;
+    }else if(MemWrite){
+        if(ALUresult > 65536 || (ALUresult % 4))
+            return 1;
+        Mem[ALUresult >> 2] = data2;
+        return 0;
     }
 }
 
