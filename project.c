@@ -261,14 +261,14 @@ int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigne
 int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
 {
     if(MemRead){
-        if(ALUresult > 65536 || (ALUresult % 4))
+        if(ALUresult > 65536 || (ALUresult % 4) != 0)
             return 1;
         
         *memdata = Mem[ALUresult >> 2];
         
         return 0;
     }else if(MemWrite){
-        if(ALUresult > 65536 || (ALUresult % 4))
+        if(ALUresult > 65536 || (ALUresult % 4) != 0)
             return 1;
         
         Mem[ALUresult >> 2] = data2;
