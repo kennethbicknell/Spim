@@ -160,6 +160,72 @@ int instruction_decode(unsigned op,struct_controls *controls)
         controls->RegDst = 0;
         controls->RegWrite = 1;
         return 0;
+    case 43: //store word
+        controls->ALUOp = 0;
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 1;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
+        return 0;
+    case 15: //Load Upper Immediate
+        controls->ALUOp = 6;
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 4: //branch on equal
+        controls->ALUOp = 1;
+        controls->ALUSrc = 0;
+        controls->Branch = 1;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
+        return 0;
+    case 10: //Set on less than immediate
+        controls->ALUOp = 2;
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 11: //Set on less than immediate unsigned
+        controls->ALUOp = 3;
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 2: //jump
+        controls->ALUOp = 0;
+        controls->ALUSrc = 0;
+        controls->Branch = 0;
+        controls->Jump = 1;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
+        return 0;
     default:
         return 1;
     }
