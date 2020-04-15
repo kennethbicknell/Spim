@@ -244,7 +244,9 @@ void read_register(unsigned r1,unsigned r2,unsigned *Reg,unsigned *data1,unsigne
 /* 10 Points */
 void sign_extend(unsigned offset,unsigned *extended_value)
 {
-    printf("%d\n", offset>>16);
+    if(offset>>16){//if there is a 1 in the MSB
+        *extended_value = offset | 0XFFFF0000; //or to set the leading zeros to one but to maintain last 16 bits
+    }
 }
 
 /* ALU operations */
@@ -258,7 +260,9 @@ int ALU_operations(unsigned data1,unsigned data2,unsigned extended_value,unsigne
 /* 10 Points */
 int rw_memory(unsigned ALUresult,unsigned data2,char MemWrite,char MemRead,unsigned *memdata,unsigned *Mem)
 {
+    if(MemRead){
 
+    }
 }
 
 
