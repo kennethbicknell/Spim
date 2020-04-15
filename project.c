@@ -79,15 +79,17 @@ void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zer
             *ALUresult = A | B;
 
             break;
-        case 6: // 110 shift B left 16 bits | ALUresult = A<<16
+        case 6: // 110 shift B left 16 bits | ALUresult = B<<16
 
-            *ALUresult = *ALUresult << 16;
+            *ALUresult = B << 16;
 
             break;
         case 7: // 111 NOT A | ALUresult = NOT A
 
             *ALUresult = ~A;
 
+            break;
+        default:
             break;
     }
 }
@@ -105,7 +107,6 @@ int instruction_fetch(unsigned PC, unsigned *Mem, unsigned *instruction)
 
 }
 
-
 /* instruction partition */
 /* 10 Points */
 void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1, unsigned *r2, unsigned *r3, unsigned *funct, unsigned *offset, unsigned *jsec)
@@ -119,8 +120,6 @@ void instruction_partition(unsigned instruction, unsigned *op, unsigned *r1, uns
     *jsec = (instruction & 0x03ffffff) >> 0;
 }
 
-
-
 /* instruction decode */
 /* 15 Points */
 int instruction_decode(unsigned op, struct_controls *controls)
@@ -128,7 +127,7 @@ int instruction_decode(unsigned op, struct_controls *controls)
     switch (op)
     {
     case 0://R-type
-        controls->ALUOp = 7;
+        controls->ALUOp = 7; //r-type
         controls->ALUSrc = 0;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -139,7 +138,7 @@ int instruction_decode(unsigned op, struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 8://add immediate
-        controls->ALUOp = 0;
+        controls->ALUOp = 0; //add
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -150,7 +149,7 @@ int instruction_decode(unsigned op, struct_controls *controls)
         controls->RegWrite = 1;
         return 0;
     case 35: //load word
-        controls->ALUOp = 0;
+        controls->ALUOp = 0;//have to add for address 
         controls->ALUSrc = 1;
         controls->Branch = 0;
         controls->Jump = 0;
@@ -159,6 +158,72 @@ int instruction_decode(unsigned op, struct_controls *controls)
         controls->MemWrite = 0;
         controls->RegDst = 0;
         controls->RegWrite = 1;
+        return 0;
+    case 43: //store word
+        controls->ALUOp = 0;//have to add for address
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 1;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
+        return 0;
+    case 15: //Load Upper Immediate
+        controls->ALUOp = 6;//shift left
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 4: //branch on equal
+        controls->ALUOp = 1;//subtract and check for 0
+        controls->ALUSrc = 0;
+        controls->Branch = 1;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
+        return 0;
+    case 10: //Set on less than immediate
+        controls->ALUOp = 2;//set less than
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 11: //Set on less than immediate unsigned
+        controls->ALUOp = 3;//set less than unsigned
+        controls->ALUSrc = 1;
+        controls->Branch = 0;
+        controls->Jump = 0;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 1;
+        return 0;
+    case 2: //jump
+        controls->ALUOp = 0;//0 for dont care because alu doesn't do anything for jump
+        controls->ALUSrc = 0;
+        controls->Branch = 0;
+        controls->Jump = 1;
+        controls->MemRead = 0;
+        controls->MemtoReg = 0;
+        controls->MemWrite = 0;
+        controls->RegDst = 0;
+        controls->RegWrite = 0;
         return 0;
     default:
         return 1;
@@ -169,7 +234,8 @@ int instruction_decode(unsigned op, struct_controls *controls)
 /* 5 Points */
 void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, unsigned *data2)
 {
-
+    *data1 = Reg[r1];
+    *data2 = Reg[r2];
 }
 
 
@@ -177,21 +243,63 @@ void read_register(unsigned r1, unsigned r2, unsigned *Reg, unsigned *data1, uns
 /* 10 Points */
 void sign_extend(unsigned offset, unsigned *extended_value)
 {
-
+    if(offset>>16){//if there is a 1 in the MSB
+        *extended_value = offset | 0XFFFF0000; //or to set the leading zeros to one but to maintain last 16 bits
+    }
 }
 
 /* ALU operations */
 /* 10 Points */
 int ALU_operations(unsigned data1, unsigned data2, unsigned extended_value, unsigned funct, char ALUOp, char ALUSrc, unsigned *ALUresult, char *Zero)
 {
+    switch (ALUop)
+    {
+        case 0: // ALU will do addition (or don't care)
+        break;
 
+        case 1: // ALU will do subtraction
+        break;
+
+        case 2: // ALU will do set less than
+        break;
+
+        case 3: // ALU will do set less than unsigned
+        break;
+
+        case 4: // ALU will do AND
+        break;
+
+        case 5: // ALU will do OR
+        break;
+
+        case 6: // ALU will shift extended_value by 16 bits
+        break;
+
+        case 7: // R type instruction
+        break;
+    
+        default:
+            return 1;
+    }
+    
+    return 0;
 }
 
 /* Read / Write Memory */
 /* 10 Points */
 int rw_memory(unsigned ALUresult, unsigned data2, char MemWrite, char MemRead, unsigned *memdata, unsigned *Mem)
 {
-
+    if(MemRead){
+        if(ALUresult > 65536 || (ALUresult % 4))
+            return 1;
+        *memdata = Mem[ALUresult >> 2];
+        return 0;
+    }else if(MemWrite){
+        if(ALUresult > 65536 || (ALUresult % 4))
+            return 1;
+        Mem[ALUresult >> 2] = data2;
+        return 0;
+    }
 }
 
 
