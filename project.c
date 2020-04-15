@@ -86,7 +86,7 @@ void ALU(unsigned A, unsigned B, char ALUControl, unsigned *ALUresult, char *Zer
             break;
         case 7: // 111 NOT A | ALUresult = NOT A
 
-            *ALUresult = ~(*ALUresult);
+            *ALUresult = ~(*A);
 
             break;
     }
