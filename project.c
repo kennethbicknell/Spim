@@ -340,7 +340,7 @@ void write_register(unsigned r2, unsigned r3, unsigned memdata, unsigned ALUresu
 void PC_update(unsigned jsec, unsigned extended_value, char Branch, char Jump, char Zero, unsigned *PC)
 {
     *PC += 4;
-    if(Branch){
+    if(Branch && Zero){
         *PC += extended_value << 2;
         return;
     } else if (Jump){
