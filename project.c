@@ -252,34 +252,40 @@ void sign_extend(unsigned offset, unsigned *extended_value)
 /* 10 Points */
 int ALU_operations(unsigned data1, unsigned data2, unsigned extended_value, unsigned funct, char ALUOp, char ALUSrc, unsigned *ALUresult, char *Zero)
 {
-    switch (ALUop)
+    if(ALUOp >= 0 && ALUOp < 7)
     {
-        case 0: // ALU will do addition (or don't care)
-        break;
-
-        case 1: // ALU will do subtraction
-        break;
-
-        case 2: // ALU will do set less than
-        break;
-
-        case 3: // ALU will do set less than unsigned
-        break;
-
-        case 4: // ALU will do AND
-        break;
-
-        case 5: // ALU will do OR
-        break;
-
-        case 6: // ALU will shift extended_value by 16 bits
-        break;
-
-        case 7: // R type instruction
-        break;
-    
-        default:
-            return 1;
+        ALU(data1, (ALUSrc) ? extended_value : data2, ALUOp, ALUresult, Zero);
+    }        
+    else if(ALUOp == 7)
+    {
+        switch (funct)
+        {
+            case 32: // add
+                ALU(data1, data2, 0, ALUresult, Zero);
+                break;
+            case 34: // subtract
+                ALU(data1, data2, 1, ALUresult, Zero);
+                break;
+            case 42: // set less than
+                ALU(data1, data2, 2, ALUresult, Zero);
+                break;
+            case 43: // set less than unsigned
+                ALU(data1, data2, 3, ALUresult, Zero);
+                break;
+            case 36: // AND
+                ALU(data1, data2, 4, ALUresult, Zero);
+                break;
+            case 37: // OR
+                ALU(data1, data2, 5, ALUresult, Zero);
+                break;
+            default:
+                return 1; // Illegal instruction
+        }
+    }
+    else
+    {
+        // Any other ALUOp value should cause a halt condition
+        return 1;    
     }
     
     return 0;
